@@ -1,16 +1,19 @@
-#pragma once
+#ifndef BIGINT_HPP
+# define BIGINT_HPP
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <ostream>
 
 class bigint{
 	private:
-		std::string bigdata;
+		std::vector<unsigned int> bigdata;
 
 	public:
 		bigint();
 		~bigint();
-		bigint(unsigned int nb);
+		bigint(unsigned long long nb);
 		bigint(const bigint &src);
 
 		std::string getBigdata() const;
@@ -33,7 +36,8 @@ class bigint{
 		bigint operator<<(unsigned int) const;
 		bigint operator>>(unsigned int) const;
 		bigint &operator>>=(const bigint &src);
-		bigint &operator<<=(const bigint &src);
+		bigint &operator<<=(unsigned int nb);
 };
 
 std::ostream &operator<<(std::ostream &out, const bigint &big);
+#endif
