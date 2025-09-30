@@ -1,65 +1,75 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   bigint2.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rapcampo <rapcampo@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/30 18:17:59 by rapcampo          #+#    #+#             */
+/*   Updated: 2025/09/30 20:03:29 by rapcampo         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "bigint.hpp"
-#include <string>
-#include <sstream>
 
 bigint::bigint(){
-    bigdata.push_back(0);
-};
+    data.push_back(0);
+}
 
-bigint::~bigint(){};
+bigint::~bigint(){}
 
-bigint::bigint(const bigint &src): bigdata(src.bigdata){
-    while (bigdata.size() > 1 && bigdata.back() == 0)
-        bigdata.pop_back();
+
+bigint::bigint(const bigint &src): data(src.data){
+    while (data.size() > 1 && data.back() == 0)
+        data.pop_back();
 }
 
 bigint &bigint::operator=(const bigint &src){
     if (this != &src){
-        this->bigdata = src.bigdata;
+        this->data = src.data;
     }
     return *this;
 }
 
 bigint::bigint(unsigned long long nb){
     if (nb == 0)
-        bigdata.push_back(0);
+        data.push_back(0);
     while (nb){
-        bigdata.push_back(nb % 10);
+        data.push_back(nb %10);
         nb /= 10;
     }
 }
 
-std::string bigint::getBigdata() const{
+std::string bigint::getData() const{
     std::string str;
-    str.reserve(bigdata.size());
+    str.reserve(data.size());
     std::vector<unsigned int>::const_reverse_iterator rit;
-
-    for (rit = bigdata.rbegin(); rit != bigdata.rend(); rit++){
-        str += *rit + '0';
+    for (rit = data.rbegin(); rit != data.rend(); rit++){
+        str += *rit +'0';
     }
-    std::string::size_type pos = str.find_last_not_of('0');
+    std::string::size_type pos = str.find_first_not_of('0');
     if (pos == str.npos)
         return "0";
-    if (pos == 0)
+    if (pos==0)
         return str;
     return str.substr(pos);
 }
 
 bigint &bigint::operator+=(const bigint &src){
-    size_t biggest = (bigdata.size() > src.bigdata.size() ? bigdata.size() : src.bigdata.size());
+    size_t biggest = (data.size() > src.data.size() ? data.size() : src.data.size());
     int carry = 0;
     bigint temp;
 
     for (size_t i = 0; i < biggest; i++){
-        int a = i < bigdata.size() ? bigdata[i] : 0;
-        int b = i < src.bigdata.size() ? src.bigdata[i] : 0;
+        int a = i < data.size() ? data[i] : 0;
+        int b = i < src.data.size() ? src.data[i] : 0;
         int sum = a + b + carry;
         sum > 9 ? (sum -= 10, carry = 1) : carry = 0;
-        temp.bigdata.push_back(sum);
+        temp.data.push_back(sum);
     }
     if (carry)
-        temp.bigdata.push_back(carry);
-    bigdata = temp.bigdata;
+        temp.data.push_back(carry);
+    data = temp.data;
     return *this;
 }
 
@@ -69,9 +79,9 @@ bigint bigint::operator+(const bigint &src) const{
     return temp;
 }
 
-bigint bigint::operator++(int){
+bigint bigint::operator++(int)const {
     bigint temp(*this);
-    temp += 1;
+    temp+=1;
     return temp;
 }
 
@@ -80,61 +90,67 @@ bigint &bigint::operator++(){
     return *this;
 }
 
-bigint bigint::operator<<(unsigned int nb) const{
-    bigint temp(*this);
-    for (; nb; nb--)
-        temp.bigdata.insert(temp.bigdata.begin(), 0);
-    return temp;
+bigint &bigint::operator<<=(unsigned int n){
+    for(; n; n--){
+        data.insert(data.begin(), 0);
+    }
+    return *this;
 }
 
 bigint &bigint::operator>>=(const bigint &src){
-    unsigned int nb = 0;
+    unsigned int n = 0;
 
-    std::vector<unsigned int>::const_reverse_iterator rit = src.bigdata.rbegin();
-    for (; rit != src.bigdata.rend(); rit++){
-        nb *= 10;
-        nb += *rit;
+    std::vector<unsigned int>::const_reverse_iterator rit = src.data.rbegin();
+    for(; rit != src.data.rend(); rit++){
+        n *=10;
+        n += *rit;
     }
-    bigdata.erase(bigdata.begin(), bigdata.begin() + nb);
+    data.erase(data.begin(), data.begin() + n);
     return *this;
 }
 
-bigint &bigint::operator<<=(unsigned int nb){
-    for(; nb; --nb)
-        bigdata.insert(bigdata.begin(), 0);
-    return *this;
+bigint bigint::operator<<(unsigned int n) const{
+    bigint temp(*this);
+    for(; n; n--){
+        temp.data.insert(temp.data.begin(), 0);
+    }
+    return temp;
 }
 
-bool bigint::operator!=(const bigint &src) const{
-    return !(this->bigdata == src.bigdata);
+bigint bigint::operator>>(unsigned int n) const{
+    bigint temp(*this);
+    temp >>= n;
+    return temp;
 }
+
 bool bigint::operator==(const bigint &src) const{
-    return this->bigdata == src.bigdata;
+    return this->data == src.data;
 }
-bool bigint::operator>(const bigint &src) const{
-    if (bigdata.size() > src.bigdata.size())
-        return true;
-    if (bigdata.size() < src.bigdata.size())
-        return false;
-    for (size_t i = bigdata.size(); i-- > 0; ){
-        if (bigdata[i] != src.bigdata[i])
-            return bigdata[i] > src.bigdata[i];
-    }
-    return false;
+bool bigint::operator!=(const bigint &src) const{
+    return !(this->data == src.data);
 }
-
 bool bigint::operator<(const bigint &src) const{
     return src > *this;
 }
-
+bool bigint::operator>(const bigint &src) const{
+    if (data.size() > src.data.size())
+        return true;
+    if (data.size() < src.data.size())
+        return false;
+    for (size_t i = data.size(); i-- > 0;){
+        if (data[i] != src.data[i])
+            return data[i] > src.data[i];
+    }
+    return false;
+}
 bool bigint::operator<=(const bigint &src) const{
     return !(*this > src);
-}
 
+}
 bool bigint::operator>=(const bigint &src) const{
     return !(*this < src);
 }
 
-std::ostream &operator<<(std::ostream &out, const bigint &bigsrc){
-    return out << bigsrc.getBigdata();
+std::ostream &operator<<(std::ostream &out, const bigint &src){
+    return out << src.getData();
 }
