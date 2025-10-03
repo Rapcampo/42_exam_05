@@ -23,6 +23,10 @@ void set::print() const{
   bag.print();
 }
 
+void set::clear(){
+  bag.clear();
+}
+
 const searchable_bag &set::get_bag(){
   return this->bag;
 }

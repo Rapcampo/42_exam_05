@@ -1,9 +1,9 @@
 #include "searchable_bag.hpp"
 
 // new code
-#include "mine/searchable_tree_bag.hpp"
-#include "mine/searchable_array_bag.hpp"
-#include "mine/set.hpp"
+#include "searchable_tree_bag.hpp"
+#include "searchable_array_bag.hpp"
+#include "set.hpp"
 //end new code
 
 #include <iostream>
@@ -15,7 +15,6 @@ int main(int argc, char **argv) {
   searchable_bag *a = new searchable_array_bag;
 
   for (int i = 1; i < argc; i++) {
-    std::cout << argv[i] << std::endl;
     t->insert(atoi(argv[i]));
     a->insert(atoi(argv[i]));
   }
@@ -57,15 +56,6 @@ int main(int argc, char **argv) {
         arr,
         4);
     std::cout << std::endl;
-		std::cout << "extra tests for set " << std::endl;
-    // searchable_bag *
-    a->clear();
-    set test_s(*a);
-    test_s.insert(99);
-    test_s.insert(arr, 4);
-    test_s.insert(99);
-    test_s.print();
-    test_s.get_bag().print();
   }
 
   return 0;
