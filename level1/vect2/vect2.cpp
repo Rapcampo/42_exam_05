@@ -102,7 +102,7 @@ vect2 vect2::operator--(int){
 vect2 vect2::operator-() const{
 	vect2 temp(*this);
 	temp[0] = -temp[0];
-	temp[0] = -temp[1];
+	temp[1] = -temp[1];
 	return temp;
 }
 
@@ -115,8 +115,7 @@ bool vect2::operator!=(const vect2 &right) const{
 }
 
 std::ostream &operator<<(std::ostream &out, const vect2& vec){
-	out << "{" << vec[0] << ", " << vec[1] << "}";
-	return out;
+	return (out << "{" << vec[0] << ", " << vec[1] << "}");
 }
 
 vect2 operator*(int n, const vect2 &src){

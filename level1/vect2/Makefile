@@ -1,7 +1,7 @@
 FILES = *.cpp *.hpp
 
 all:
-	c++ -Wall -Wextra -Werror -std=c++98 -g -fsanitize=thread $(FILES) -o vec
+	c++ -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address $(FILES) -o vec
 
 re: clean all
 

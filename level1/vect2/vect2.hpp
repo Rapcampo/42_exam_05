@@ -3,7 +3,6 @@
 
 #include <utility>
 #include <iostream>
-#include <fstream>
 
 class vect2{
 	private:
@@ -38,7 +37,7 @@ class vect2{
 		bool operator!=(const vect2 &right) const;//done
 };
 
-std::ostream &operator<<(std::ostream &out, const vect2 vect2);//done
-vect2 operator*(int, const vect2 &src);
+std::ostream &operator<<(std::ostream &out, const vect2 &vec);//done
+vect2 operator*(int, const vect2 &src);//done
 
 #endif
