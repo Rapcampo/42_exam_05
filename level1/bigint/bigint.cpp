@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bigint2.cpp                                        :+:      :+:    :+:   */
+/*   bigint.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rapcampo <rapcampo@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:17:59 by rapcampo          #+#    #+#             */
-/*   Updated: 2025/09/30 20:03:29 by rapcampo         ###   ########.fr       */
+/*   Updated: 2025/10/03 19:13:52 by rapcampo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,23 +47,28 @@ std::string bigint::getData() const{
     for (rit = data.rbegin(); rit != data.rend(); rit++){
         str += *rit +'0';
     }
-    std::string::size_type pos = str.find_first_not_of('0');
-    if (pos == str.npos)
-        return "0";
-    if (pos==0)
-        return str;
+    std::string::iterator it = str.begin();
+    std::string::size_type pos = 0;
+    if (str.size() > 1 && *it == '0'){
+        pos = str.find_first_not_of('0');
+        if (pos == str.npos)
+            return "0";
+        if (pos == 0)
+            return str;
+    }
     return str.substr(pos);
 }
 
 bigint &bigint::operator+=(const bigint &src){
     size_t biggest = (data.size() > src.data.size() ? data.size() : src.data.size());
-    int carry = 0;
+    int carry = 0, a, b, sum;
     bigint temp;
 
+    temp.data.clear();
     for (size_t i = 0; i < biggest; i++){
-        int a = i < data.size() ? data[i] : 0;
-        int b = i < src.data.size() ? src.data[i] : 0;
-        int sum = a + b + carry;
+        a = i < data.size() ? data[i] : 0;
+        b = i < src.data.size() ? src.data[i] : 0;
+        sum = a + b + carry;
         sum > 9 ? (sum -= 10, carry = 1) : carry = 0;
         temp.data.push_back(sum);
     }
@@ -79,9 +84,9 @@ bigint bigint::operator+(const bigint &src) const{
     return temp;
 }
 
-bigint bigint::operator++(int)const {
+bigint bigint::operator++(int){
     bigint temp(*this);
-    temp+=1;
+    *this += 1;
     return temp;
 }
 

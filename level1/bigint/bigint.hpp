@@ -33,7 +33,7 @@ class bigint{
 
 		bigint &operator+=(const bigint &);
 		bigint operator+(const bigint &) const;
-		bigint operator++(int) const;
+		bigint operator++(int);
 		bigint &operator++();
 
 		bool operator<(const bigint &) const;
