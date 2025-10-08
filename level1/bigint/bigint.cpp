@@ -47,9 +47,8 @@ std::string bigint::getData() const{
     for (rit = data.rbegin(); rit != data.rend(); rit++){
         str += *rit +'0';
     }
-    std::string::iterator it = str.begin();
     std::string::size_type pos = 0;
-    if (str.size() > 1 && *it == '0'){
+    if (str.size() > 1 && *data.begin() == '0'){
         pos = str.find_first_not_of('0');
         if (pos == str.npos)
             return "0";

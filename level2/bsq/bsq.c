@@ -12,17 +12,15 @@ struct bsq{
 	char **map;
 };
 
+void error_quit(struct bsq *bsq, char *av, FILE *file, int i);
 void	parse(struct bsq *bsq, char *av);
 void	resolve(struct bsq *bsq);
 void	print_bsq(struct bsq *bsq);
 void	free_map(struct bsq *bsq, int lines);
 
 int aborc(int a, int b, int c){
-	if (a < b && a < c)
-		return a;
-	if (b < c)
-		return b;
-	return c;
+	int min = a < b ? a : b;
+	return min < c ? min : c;
 }
 
 void	resolve(struct bsq *bsq){
@@ -43,6 +41,8 @@ void	resolve(struct bsq *bsq){
 			}
 		}
 	}
+	if (max == 0)
+		error_quit(bsq, NULL, NULL, 1);
 	int st_y = by - max + 1;
 	int st_x = bx - max + 1;
 	int fy = st_y + max;
