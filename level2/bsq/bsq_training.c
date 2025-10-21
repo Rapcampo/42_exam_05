@@ -78,10 +78,15 @@ void	parse(struct bsq *bsq, char *av){
 		if (getline(&nline, &len, file) == -1)
 			fputs(ERR_MAP, stdout), error_quit(bsq, av, file, -1);
 		new_len = ft_strlen(nline);
+		if (new_len > 0 && nline[new_len - 1] == '\n')
+			nline[new_len - 1] = '\0';
+		else if (i < bsq->height - 1 && nline[new_len - 1] != '\n')
+			fputs(ERR_MAP, stdout), error_quit(bsq, av, file, i);
+		new_len = ft_strlen(nline);
 		if (i == 0)
 			bsq->width = new_len;
 		if (i != 0 && i < bsq->height - 1 && bsq->width != new_len)
-			fputs(ERR_MAP, stdout), error_quit(bsq, av, file, -1);
+			fputs(ERR_MAP, stdout), error_quit(bsq, av, file, i);
 		bsq->map[i] = nline;
 	}
 	fclose(file);
