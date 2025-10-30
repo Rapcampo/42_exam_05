@@ -1,122 +1,102 @@
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct bsq{
-	int lines;
-	char empt;
-	char obstacle;
-	char fill;
 	int w;
+	int h;
+	char e;
+	char o;
+	char f;
 	char **map;
 };
 
-void error_quit(struct bsq *bsq, char *av, FILE *file, int i);
+struct vec{
+	int x;
+	int y;
+};
+
+#define ERR_MAP "Error: invalid map\n"
+
 void	parse(struct bsq *bsq, char *av);
 void	resolve(struct bsq *bsq);
+void	freemap(struct bsq *bsq, int lines);
 void	print_bsq(struct bsq *bsq);
-void	free_map(struct bsq *bsq, int lines);
+void	err_quit(struct bsq *bsq, char *av, FILE *file, int i);
+void	check(struct bsq *bsq);
+int		ft_strlen(char *str);
+int		min3(int a, int b, int c);
 
-int aborc(int a, int b, int c){
-	int min = a < b ? a : b;
-	return min < c ? min : c;
-}
-
-void	resolve(struct bsq *bsq){
-	int board[bsq->lines][bsq->w];
-	int max = 0, by = 0, bx = 0;
-	for (int i = 0; i < bsq->lines; i++){
-		for (int j = 0; j < bsq->w; j++){
-			if (bsq->map[i][j] == bsq->obstacle)
-				board[i][j] = 0;
-			else if (i == 0 || j == 0)
-				board[i][j] = 1;
-			else
-				board[i][j] = aborc(board[i - 1][j], board[i][j - 1], board[i - 1][j - 1]) + 1;
-			if (board[i][j] > max){
-				max = board[i][j];
-				by = i;
-				bx = j;
-			}
-		}
-	}
-	if (max == 0)
-		error_quit(bsq, NULL, NULL, 1);
-	int st_y = by - max + 1;
-	int st_x = bx - max + 1;
-	int fy = st_y + max;
-	int fx = st_x + max;
-	for(int i = st_y; i < fy; i++)
-		for(int j = st_x; j < fx; j++)
-			bsq->map[i][j] = bsq->fill;
-}
-
-void	check_map(struct bsq *bsq){
-	for(int i = 0; i < bsq->lines; i++)
-		for(int j = 0; j < bsq->lines; j++)
-			if (bsq->map[i][j] != bsq->empt && bsq->map[i][j] != bsq->obstacle)
-				free_map(bsq, bsq->lines), fputs("map error\n", stdout), exit(1);
-}
-
-void	free_map(struct bsq *bsq, int lines){
-	for (int j = 0; j < lines; j++){
-		free(bsq->map[j]);
-	}
-	free(bsq->map);
-}
-
-void	print_bsq(struct bsq *bsq){
-	for (int i = 0; i < bsq->lines; i++)
-		printf("%s\n", bsq->map[i]);
-}
-
-int ft_strlen(char *str){
-	int i;
-	for(i = 0; str[i]; i++);
-	return i;
-}
-
-void error_quit(struct bsq *bsq, char *av, FILE *file, int i){
-	if (av)
-		fclose(file);
-	fputs("map error\n", stdout);
-	if (i >= 0)
-		free_map(bsq, i);
-	exit(1);
-}
-
-void parse(struct bsq *bsq, char *av){
+void	parse(struct bsq *bsq, char *av){
 	FILE *file;
 	if (av)
 		file = fopen(av, "r");
 	else
 		file = stdin;
 	if (!file)
-		fputs("Map error\n", stdout), exit(1);
-	if (fscanf(file, "%d%c%c%c\n", &bsq->lines, &bsq->empt, &bsq->obstacle, &bsq->fill) != 4)
-		error_quit(bsq, av, file, -1);
-	if (bsq->lines <= 0)
-		error_quit(bsq, av, file, -1);
-	if (bsq->empt == bsq->fill || bsq->empt == bsq->obstacle || bsq->obstacle == bsq->fill)
-		error_quit(bsq, av, file, -1);
-	bsq->map = malloc(sizeof(char *) * bsq->lines);	
-	for (int i = 0; i < bsq->lines; i++){
-		char *new = NULL;
+		fputs(ERR_MAP, stdout), exit(1);
+	if (fscanf(file, "%d%c%c%c\n", &bsq->h, &bsq->e, &bsq->o, &bsq->f) != 4)
+		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
+	if (bsq->h <= 0)
+		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
+	else if (bsq->e == bsq->o || bsq->e == bsq->f || bsq->f == bsq->o)
+		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
+	bsq->map = malloc(sizeof(char *) * bsq->h);
+	if (!bsq->map)
+		fputs("Error: malloc error", stdout), err_quit(bsq, av, file, -1);
+	for (int i = 0; i < bsq->h; i++){
+		char *line = NULL;
 		size_t len = 0;
-		int new_len;
-
-		if (getline(&new, &len, file) == -1)
-			error_quit(bsq, av, file, -1);
-		new_len = ft_strlen(new);
+		int nlen = 0;
+		if (getline(&line, &len, file) == -1)
+			fputs("Error: malloc error", stdout), err_quit(bsq, av, file, i);
+		nlen = ft_strlen(line);
+		if (i < bsq->h && line[nlen - 1] == '\n')
+			line[nlen - 1] = '\0';
+		else if (i < bsq->h && line[nlen - 1] != '\n')
+			fputs(ERR_MAP, stdout), free(line), err_quit(bsq, av, file, i);
+		nlen = ft_strlen(line);
 		if (i == 0)
-			bsq->w = new_len;
-		if (i != 0 && i < bsq->lines - 1 && bsq->w != new_len)
-			error_quit(bsq, av, file, -1);
-		bsq->map[i] = new;
+			bsq->w = nlen;
+		else if (i < bsq->h && bsq->w != nlen)
+			fputs(ERR_MAP, stdout), free(line), err_quit(bsq, av, file, i);
+		bsq->map[i] = line;
 	}
 	fclose(file);
-	check_map(bsq);
+	check(bsq);
+}
+
+void	resolve(struct bsq *bsq){
+	int board[bsq->h][bsq->w];
+	struct vec v = {0};
+	struct vec st = {0};
+	struct vec f = {0};
+	int max = 0;
+	for (int y = 0; y < bsq->h; y++){
+		for (int x = 0; x < bsq->w; x++){
+			if (bsq->map[y][x] == bsq->o)
+				board[y][x] = 0;
+			else if (y == 0 || x == 0)
+				board[y][x] = 1;
+			else
+				board[y][x] = min3(board[y - 1][x], board[y][x - 1], board[y - 1][x - 1]) + 1;
+			if (board[y][x] > max){
+				max = board[y][x];
+				v.y = y;
+				v.x = x;
+			}
+		}
+	}
+	if (max == 0)
+		return; //must return to print obstacle only course
+	st.y = v.y - max + 1;
+	st.x = v.x - max + 1;
+	f.y = st.y + max;
+	f.x = st.x + max;
+	for (int y = st.y; y < f.y; y++)
+		for (int x = st.x; x < f.x; x++)
+			bsq->map[y][x] = bsq->f;
 }
 
 int main(int ac, char **av){
@@ -126,8 +106,52 @@ int main(int ac, char **av){
 	else if (ac == 2)
 		parse(&bsq, av[1]);
 	else
-		return (printf("Error: wrong number of args"), 1);
+		return (fputs("Error: too many arguments\n", stdout), 1);
 	resolve(&bsq);
 	print_bsq(&bsq);
-	free_map(&bsq, bsq.lines);
+	freemap(&bsq, bsq.h);
+	return 0;
+}
+
+int min3(int a, int b, int c){
+	int min = a < b ? a : b;
+	return min < c ? min : c;
+}
+
+int ft_strlen(char *str){
+	int i;
+	for (i = 0; str[i]; i++);
+	return i;
+}
+
+void	check(struct bsq *bsq){
+	for (int y = 0; y < bsq->h; y++){
+		for (int x = 0; x < bsq->w; x++){
+			if (bsq->map[y][x] != bsq->e && bsq->map[y][x] != bsq->o){
+				fputs(ERR_MAP, stdout),err_quit(bsq, NULL, NULL, bsq->h);
+			}
+		}
+	}
+}
+
+void	err_quit(struct bsq *bsq, char *av, FILE *file, int i){
+	if (av)
+		fclose(file);
+	if (i >= 0)
+		freemap(bsq, i);
+	exit(1);
+}
+
+void	print_bsq(struct bsq *bsq){
+	for (int i = 0; i < bsq->h; i++)
+		printf("%s\n", bsq->map[i]);
+	printf("\n");
+}
+
+void	freemap(struct bsq *bsq, int lines){
+	if (lines){
+		for (int i = 0; i < lines; i++)
+			free(bsq->map[i]);
+		free(bsq->map);
+	}
 }
