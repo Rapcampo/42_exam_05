@@ -1,67 +1,74 @@
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 
-void	game_of_life(int x, int y, int iter){
-	int board[y][x];
-	for(int i = 0; i < y; i++)
-		for(int j = 0; j < x; j++)
-			board[i][j] = 0;
-	int by = 0, bx = 0, pen = 0;
+struct vec{
+	int x;
+	int y;
+	int pen;
+};
+
+void	life(int w, int h, int iter){
+	struct vec v = {0};
+	int board[h][w];
+	int copy[h][w];
 	char c;
+	for (int y = 0; y < h; y++)
+		for (int x = 0; x < w; x++)
+			board[y][x] = 0, copy[y][x] = 0;
 	while (read(0, &c, 1)){
-		if (c == 'w' && by > 0)
-			by--;
-		else if (c == 's' && by < y - 1)
-			by++;
-		else if (c == 'a' && bx > 0)
-			bx--;
-		else if (c == 'd' && bx < x - 1)
-			bx++;
-		else if (c == 'x' && pen)
-			pen = 0;
-		else if (c == 'x' && !pen)
-			pen = 1;
-		if (pen)
-			board[by][bx] = 1;
+		if (c == 'w' && v.y > 0)
+			v.y--;
+		else if (c == 's' && v.y < h)
+			v.y++;
+		else if (c == 'a' && v.x > 0)
+			v.x--;
+		else if (c == 'd' && v.x < w)
+			v.x++;
+		else if (c == 'x' && v.pen)
+			v.pen--;
+		else if (c == 'x' && !v.pen)
+			v.pen++;
+		if (v.pen)
+			board[v.y][v.x] = 1;
 	}
-	int n = 0;
-	int newb[y][x];
-	for(int it = 0; it < iter; it++){
-		for (int yb = 0; yb < y; yb++){
-			for(int xb = 0; xb < x; xb++){
+	int n;
+	while(iter--){
+		for (int y = 0; y < h; y++){
+			for (int x = 0; x < w; x++){
 				n = 0;
-				for(int yy = -1; yy <= 1; yy++){
-					for(int xx = -1; xx <= 1; xx++){
-						if ((xx || yy) && xb + xx >= 0 
-								&& yb + yy >= 0
-								&& xb + xx < x
-								&& yb + yy < y)
-							n += board[yb + yy][xb + xx];
+				for (int yy = -1; yy <= 1; yy++){
+					for (int xx = -1; xx <= 1; xx++){
+						if ((xx || yy)
+								&& yy + y < h
+								&& yy + y >= 0
+								&& xx + x < w
+								&& xx + x >= 0)
+							n += board[yy + y][xx + x];
 					}
 				}
-				if (board[yb][xb] && (n == 2 || n == 3))
-					newb[yb][xb] = 1;
-				else if (!(board[yb][xb]) && n == 3)
-					newb[yb][xb] = 1;
+				if (board[y][x] == 1 && (n == 2 || n == 3))
+					copy[y][x] = 1;
+				else if (!board[y][x] && n == 3)
+					copy[y][x] = 1;
 				else
-					newb[yb][xb] = 0;
+					copy[y][x] = 0;
 			}
 		}
-		for(int i = 0; i < y; i++)
-			for(int j = 0; j < x; j++)
-				board[i][j] = newb[i][j];
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++)
+				board[y][x] = copy[y][x];
 	}
-	for(int i = 0; i < y; i++){
-		for(int j = 0; j < x; j++){
-			putchar(board[i][j] ? '0' : ' ');
-		}
+	for (int y = 0; y < h; y++){
+		for (int x = 0; x < w; x++)
+			putchar(board[y][x] ? '0' : ' ');
 		putchar('\n');
 	}
 }
 
-int main(int argc, char **argv){
-	if (argc != 4)
+int main(int ac, char **av){
+	if (ac != 4)
 		return 1;
-	game_of_life(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+	life(atoi(av[1]), atoi(av[2]), atoi(av[3]));
+	return 0;
 }
