@@ -29,6 +29,7 @@ void	err_quit(struct bsq *bsq, char *av, FILE *file, int i){
 		fclose(file);
 	if (i > 0)
 		freemap(bsq, i);
+	exit(1);
 }
 
 int min3(int a, int b, int c){
@@ -77,6 +78,8 @@ void	parse(struct bsq *bsq, char *av){
 		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
 	if (bsq->empt == bsq->obst || bsq->empt == bsq->fill || bsq->fill == bsq->obst)
 		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
+	if (bsq->h <= 0)
+		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
 	bsq->map = malloc(sizeof(char *) * bsq->h);
 	if (bsq->map == NULL)
 		fputs(ERR_MAP, stdout), err_quit(bsq, av, file, -1);
@@ -88,17 +91,17 @@ void	parse(struct bsq *bsq, char *av){
 		len = 0;
 		nlen = 0;
 		if (getline(&nl, &len, file) == -1)
-			fputs(ERR_MAP, stdout), err_quit(bsq, av, file, i);
+			fputs(ERR_MAP, stdout), free(nl), err_quit(bsq, av, file, i);
 		nlen = ft_strlen(nl);
 		if (nlen > 0 && nl[nlen - 1] == '\n')
 			nl[nlen - 1] = '\0';
-		else if (nl[nlen - 1] != '\n')
-			fputs(ERR_MAP, stdout), err_quit(bsq, av, file, i);
+		else if (i < bsq->h - 1  && nl[nlen - 1] != '\n')
+			fputs(ERR_MAP, stdout), free(nl), err_quit(bsq, av, file, i);
 		nlen = ft_strlen(nl);
 		if (i == 0)
 			bsq->w = nlen;
 		else if (i != 0 && i < bsq->h - 1 && bsq->w != nlen)
-			fputs(ERR_MAP, stdout), err_quit(bsq, av, file, i);
+			fputs(ERR_MAP, stdout), free(nl), err_quit(bsq, av, file, i);
 		bsq->map[i] = nl;
 	}
 	fclose(file);

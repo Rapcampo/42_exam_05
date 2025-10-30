@@ -76,7 +76,7 @@ void	parse(struct bsq *bsq, char *av){
 		int new_len;
 
 		if (getline(&nline, &len, file) == -1)
-			fputs(ERR_MAP, stdout), error_quit(bsq, av, file, -1);
+			fputs(ERR_MAP, stdout), free(nline), error_quit(bsq, av, file, -1);
 		new_len = ft_strlen(nline);
 		if (new_len > 0 && nline[new_len - 1] == '\n')
 			nline[new_len - 1] = '\0';
